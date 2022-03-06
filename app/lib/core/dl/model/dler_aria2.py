@@ -27,14 +27,16 @@ class Aria2Dler(Dler):
             dict(args),
         ]
 
+        # print("[aria2] params: ", parms)
         msg = self.call(parms, "aria2.addUri")
 
         if "error" in msg:
             self.status(Dler.CODE_BAD_FAILED, True)
         else:
             self._a2TaskID = msg["result"]
-            self.__monitor_schedule()
-
+            # 跳过轮询aria2结果
+            self.status(Dler.CODE_GOOD_SUCCESS, True)
+            # self.__monitor_schedule()
         self.callback()
 
     def __monitor_schedule(self):
@@ -55,7 +57,8 @@ class Aria2Dler(Dler):
                 self.status(Dler.CODE_GOOD_SUCCESS, True)
                 break
             else:
-                time.sleep(0.5)
+                # time.sleep(0.5)
+                time.sleep(3)
         self._stuIngSpeed = 0
 
     def tell_status(self):

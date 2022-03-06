@@ -54,7 +54,9 @@ class static_file(object):
             os.makedirs(uriDir)
         # 检测是否有重名文件，有则将文件名改为 x_time
         if dRename and os.path.exists(uri):
-            uri = uriDir + fileName + "_" + str(int(time.time())) + "." + fileType
+            # 跳过重名文件
+            return False
+            # uri = uriDir + fileName + "_" + str(int(time.time())) + "." + fileType
 
         try:
             with open(uri, mode) as f:
@@ -156,7 +158,8 @@ class static_file(object):
                 append_images=imgs[1:],
                 duration=dlist,
             )
-        except:
+        except Exception as e:
+            print("[Error] %s" % e)
             return False
         return True
 

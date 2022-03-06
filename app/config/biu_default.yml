@@ -3,7 +3,7 @@
 # You can use the translation tool to read it, for now.
 
 ## 系统相关 ##
-sys.host: "127.0.0.1:4001"
+sys.host: "0.0.0.0:4001"
   # 程序运行的地址，如果不是很懂请不要修改
   # 不可带有 http:// 前缀
 
@@ -16,13 +16,14 @@ sys.api: "public"
   # public: 可以使用全功能，但必须需要代理（翻墙）
   # byPassSni: 可以使用全功能，但无需代理（无需翻墙）
 
-sys.proxy: ""
+# sys.proxy: "no"
+sys.proxy: "http://127.0.0.1:7890"
   # 本地代理服务监听地址
   # 如 http://127.0.0.1:1080/
   # 留空则程序会自动检测系统代理设置（仅 Windows、macOS）
   # 填入 no 则不使用任何代理
 
-sys.language: ""
+sys.language: "zh"
   # 语言设置，留空为程序自动判断
   # 可选：zh、en
 
@@ -30,7 +31,7 @@ sys.theme: "multiverse"
   # 默认主题
   # 暂无其他，请保持默认为 multiverse
 
-sys.autoOpen: true
+sys.autoOpen: false
   # 启动后自动打开程序运行网址
 
 
@@ -44,7 +45,7 @@ biu.search.loadCacheFirst: true
 
 
 ## 下载相关 ##
-biu.download.mode: "dl-single"
+biu.download.mode: "aria2"
   # 下载模式
   # dl-single: 程序单线程下载
   # aria2: 使用 aria2 下载，如果启用此项，还需填写下方的 aria2Host、aria2Secret
@@ -56,8 +57,10 @@ biu.download.aria2Host: "localhost:6800"
 biu.download.aria2Secret: ""
   # aria2 RPC 密钥，如未设置请留空
 
-biu.download.maxDownloading: 8
+biu.download.maxDownloading: 50
   # 最大同时下载任务数
+
+biu.download.prefixR18: "R-18"
 
 biu.download.saveURI: "{ROOTPATH}/downloads/{KT}/"
   # 下载保存路径，以 / 结尾
@@ -74,7 +77,7 @@ biu.download.saveURI: "{ROOTPATH}/downloads/{KT}/"
   # - {date_image}: 作品的日期
   # - {date_today}: 今天的日期
 
-biu.download.saveFileName: "{title}_{work_id}"
+biu.download.saveFileName: "[{user_name}]-{title}-{work_id}"
   # 下载图片的标题
   # 不可使用 \ 符号，请将其替换为 \\
   # 可选变量
@@ -95,11 +98,11 @@ biu.download.autoDeterTheSame: true
   # 若相同，则只保留一份；若不同，则自动将新图片重命名
   # true 为开启；false 为关闭
 
-biu.download.whatsUgoira: "webp"
+biu.download.whatsUgoira: "no"
   # 将动图转换为指定格式
   # 可选 webp, gif
 
-biu.download.imageHost: ""
+biu.download.imageHost: "https://i.pixiv.re"
   # 下载时使用的 Pixiv 图片服务器
   # 留空则程序自动判断
   # 参考如下：

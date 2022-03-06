@@ -172,3 +172,8 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+cache/
+*.yml
+*.bak
+*.json

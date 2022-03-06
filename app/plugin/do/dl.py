@@ -55,6 +55,22 @@ class doDownload(interRoot):
         if rootURI[-1] != "/":
             rootURI = rootURI + "/"
 
+        # 处理R-18分文件夹的情况
+        prefixR18 = None if not "prefixR18" in self.CORE.biu.sets["biu"]["download"] else self.CORE.biu.sets["biu"]["download"]["prefixR18"]
+        if prefixR18 and len(prefixR18.strip()) > 0:
+            # 判断tag里是否有R-18
+            tags = r["tags"]
+            is_r18 = False
+            for t in tags:
+                if t["name"] == "R-18" or t["name"] == "R18" or t["name"] == "R-18G":
+                    is_r18 = True
+                    break
+            if is_r18:
+                # print("o(*////▽////*)q 是不得了的东西呢 (*/ω＼*)")
+                rootURI += (prefixR18 + "/")
+            else:
+                rootURI += "normal/"
+
         rootURI = self.__deName(rootURI, r)
         picTitle = self.__pureName(
             self.__deName(self.CORE.biu.sets["biu"]["download"]["saveFileName"], r)
@@ -242,6 +258,8 @@ class doDownload(interRoot):
                     self.STATIC.file.rename(this._dlArgs["@deterPaths"]["dst"], this._dlArgs["@deterPaths"]["maybe"])
 
     def __callback_merge(self, this):
+        if self.CORE.biu.sets["biu"]["download"]["whatsUgoira"] == "no":
+                return True
         if this.status(self.CORE.dl.mod.CODE_GOOD_SUCCESS):
             if self.CORE.dl.modName == "aria2" and self.CORE.dl.mod.HOST not in ("127.0.0.1", "localhost"):
                 return False
@@ -260,9 +278,10 @@ class doDownload(interRoot):
                                              pl,
                                              dl)
                 else:
-                    self.STATIC.file.cov2webp(os.path.join(this._dlSaveDir, this._dlArgs["@ugoira"]["name"] + ".webp"),
-                                              pl,
-                                              dl)
-            except:
+                    output_webp_path = os.path.join(this._dlSaveDir, this._dlArgs["@ugoira"]["name"] + ".webp")
+                    res = self.STATIC.file.cov2webp(output_webp_path, pl, dl, quality=80)
+                    print("[webp] save to : ", output_webp_path, res)
+            except Exception as e:
+                print("[Error]: %s" % e)
                 return False
             return True

@@ -6,6 +6,8 @@
 # Please refer to the default configuration file (./app/config/biu_default.yml)
 # Add the configuration items that need to be modified in the default configuration file to the end
 
-sys.host: "127.0.0.1:4001"
+sys.host: "0.0.0.0:4001"
 sys.proxy: ""
 sys.language: ""
+
+# biu.download.imageHost: "https://i.pximg.net"
