@@ -15,7 +15,7 @@ from altfe.interface.root import interRoot
 @interRoot.bind("biu", "LIB_CORE")
 class core_module_biu(interRoot):
     def __init__(self):
-        self.ver = 203000
+        self.ver = 203020
         self.place = "local"
         self.sysPlc = platform.system()
         self.api_route = "direct"
@@ -23,7 +23,7 @@ class core_module_biu(interRoot):
         self.sets = self.INS.conf.dict("biu_default")
         self.pximgURL = "https://i.pximg.net"
         self.proxy = ""
-        self.biuInfo = ""
+        self.biuInfo = None
         self.lang = self.INS.i18n.get_bundle("app.core.biu", func=True)
         # 线程相关
         self.lock = threading.Lock()
@@ -103,8 +103,9 @@ class core_module_biu(interRoot):
             self.STATIC.localMsger.red(self.lang("outdated.fail_to_check_duo_to_network"))
         elif self.ver < self.biuInfo["version"]:
             self.STATIC.localMsger.red(
-                f"{self.lang('outdated.hint_exist_new')}@{self.biuInfo['version']}! {self.lang('tell_to_download')}")
-            input(self.lang("outdated.press_to_use_old"))
+                f"{self.lang('outdated.hint_exist_new')}@{self.biuInfo['version']}! {self.lang('outdated.tell_to_download')}")
+            if self.biuInfo['version'] // 1000 > self.ver // 1000:
+                input(self.lang("outdated.press_to_use_old"))
 
     def __check_out_network(self):
         """
