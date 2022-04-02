@@ -7,12 +7,12 @@ PixivBiu is a nice Pixiv **assistant** tool.
 
 ## Features
 
-* Pixiv searching, sort by favorites and popularity without membership
+* Pixiv searching, sort by favorites, popularity and date without membership
 * Download original images, including illustrations, comics and motion pictures
 * Multiple download modes, single and multi-threaded mode and aria2 support
-* Filter image width, height, type, time and tags
-* Get user's works, favorites, followers, related recommendations
-* Get rankings, including today's, week's, and month's rankings
+* Filter image width, height, scale, type, time and tags
+* Get user's works, favorites, followers, recommendations
+* Get rankings, including today, week, month, and specific date
 * Favorite works and followers
 
 ## Usage

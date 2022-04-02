@@ -1,6 +1,13 @@
-function searchForWorks(key, grpIdx = 0, isCache = 1, mode = tmpSearchSettings['pixivbiu_searchMode']) {
+function searchForWorks(key = null, grpIdx = 0, isCache = 1, mode = tmpSearchSettings['pixivbiu_searchMode']) {
     cssShowLoading();
-    setTimeout("progresserSearching('" + key + '_' + String(tmpSearchSettings['pixivbiu_searchPageNum']) + '+' + String(grpIdx) + "')", 200);
+    if (!key) {
+        if (!tmpPageData || !tmpPageData.args || !tmpPageData.args.fun || !tmpPageData.args.fun.kt)
+            showPics('Error :<', ['main'], []);
+        else
+            key = tmpPageData.args.fun.kt;
+    }
+    const searchID = key + '_' + String(tmpSearchSettings['pixivbiu_searchPageNum']) + '+' + String(grpIdx);
+    setTimeout((c = searchID) => progresserSearching(c), 200)
     if (mode !== 'tag' && mode !== 'otag' && mode !== 'des')
         mode = 'tag';
     $.ajax({
@@ -12,13 +19,13 @@ function searchForWorks(key, grpIdx = 0, isCache = 1, mode = tmpSearchSettings['
             'totalPage': tmpSearchSettings['pixivbiu_searchPageNum'],
             'isCache': Number(isCache),
             'groupIndex': Number(grpIdx),
-            'sortMode': String(tmpSearchSettings['pixivbiu_sortMode'])
         },
         success: function (rep) {
             rep = jQuery.parseJSON(JSON.stringify(rep));
             if (rep.code) {
                 tmpCode = rep.code;
                 tmpPageData = rep.msg;
+                changeTitleName(`搜索[${mode}]@${key}`);
                 showPics('Biu~');
             } else {
                 showPics('Error :<', ['main'], []);
@@ -31,6 +38,7 @@ function searchForWorks(key, grpIdx = 0, isCache = 1, mode = tmpSearchSettings['
 }
 
 function getUserWorks(user, type, grpIdx = 0) {
+    KEYS = { illust: "用户插画", manga: "用户漫画" };
     NProgress.inc();
     cssShowLoading();
     $.ajax({
@@ -39,16 +47,18 @@ function getUserWorks(user, type, grpIdx = 0) {
         data: {
             'userID': user,
             'type': type,
-            'sortMode': String(tmpSearchSettings['pixivbiu_sortMode']),
-            'isSort': Number(tmpSearchSettings['pixivbiu_funIsAllSort'] === 'on'),
             'totalPage': tmpSearchSettings['pixivbiu_searchPageNum'],
-            'groupIndex': Number(grpIdx)
+            'groupIndex': Number(grpIdx),
         },
         success: function (rep) {
             rep = jQuery.parseJSON(JSON.stringify(rep));
             if (rep.code) {
                 tmpCode = rep.code;
                 tmpPageData = rep.msg;
+                if (rep.msg.rst.data.length > 0)
+                    changeTitleName(`${KEYS[rep.msg.args.fun.type]}@${rep.msg.rst.data[0].author.name}`);
+                else
+                    changeTitleName(`${KEYS[rep.msg.args.fun.type]}@${user}`);
                 showPics('Biu~');
             } else {
                 showPics('Error :<', ['main'], []);
@@ -70,6 +80,7 @@ function getRank(mode = 'day', grpIdx = 0) {
         url: "api/biu/get/rank/",
         data: {
             'mode': mode,
+            'date': tmpFilters['pixivbiu_filterRkDate'] ? tmpFilters['pixivbiu_filterRkDate'] : 0,
             'totalPage': tmpSearchSettings['pixivbiu_searchPageNum'],
             'groupIndex': Number(grpIdx)
         },
@@ -77,6 +88,7 @@ function getRank(mode = 'day', grpIdx = 0) {
             rep = jQuery.parseJSON(JSON.stringify(rep));
             if (rep.code) {
                 tmpPageData = rep.msg;
+                changeTitleName(`排行榜@${mode}`);
                 showPics('排行榜@' + mode, ['main', 'header']);
             } else {
                 showPics('Error :<', ['main'], []);
@@ -100,13 +112,12 @@ function getRecommend(type = 'illust', grpIdx = 0) {
             'type': type,
             'totalPage': tmpSearchSettings['pixivbiu_searchPageNum'],
             'groupIndex': Number(grpIdx),
-            'sortMode': String(tmpSearchSettings['pixivbiu_sortMode']),
-            'isSort': Number(tmpSearchSettings['pixivbiu_funIsAllSort'] === 'on')
         },
         success: function (rep) {
             rep = jQuery.parseJSON(JSON.stringify(rep));
             if (rep.code) {
                 tmpPageData = rep.msg;
+                changeTitleName(`推荐@${type}`);
                 showPics('推荐@' + type, ['main', 'header']);
             } else {
                 showPics('Error :<', ['main'], []);
@@ -130,14 +141,13 @@ function getNewToMe(mode = 'public', grpIdx = 0) {
             'restrict': mode,
             'totalPage': tmpSearchSettings['pixivbiu_searchPageNum'],
             'groupIndex': Number(grpIdx),
-            'sortMode': String(tmpSearchSettings['pixivbiu_sortMode']),
-            'isSort': Number(tmpSearchSettings['pixivbiu_funIsAllSort'] === 'on')
         },
         success: function (rep) {
             rep = jQuery.parseJSON(JSON.stringify(rep));
             if (rep.code) {
                 tmpPageData = rep.msg;
-                showPics('用户新作@' + mode, ['main', 'header']);
+                changeTitleName(`我关注的新作@${mode}`);
+                showPics('我关注的新作@' + mode, ['main', 'header']);
             } else {
                 showPics('Error :<', ['main'], []);
             }
@@ -167,10 +177,8 @@ function getMarks(user = '', mode = 'public', grp = '0@0') {
         data: {
             'userID': user,
             'restrict': mode,
-            'sortMode': String(tmpSearchSettings['pixivbiu_sortMode']),
-            'isSort': Number(tmpSearchSettings['pixivbiu_funIsAllSort'] === 'on'),
             'groupIndex': String(grpArr[grpIdx]),
-            'tmp': grp
+            'tmp': grp,
         },
         success: function (rep) {
             rep = jQuery.parseJSON(JSON.stringify(rep));
@@ -179,8 +187,11 @@ function getMarks(user = '', mode = 'public', grp = '0@0') {
                     rep['msg']['args']['ops']['tmp'] = grp.split('@')[0] + '@' + grp.split('@')[1] + '_' + rep['msg']['args']['ops']['markNex'];
                 tmpPageData = rep.msg;
                 if (user === '' || user === 'my') {
+                    changeTitleName(`我的收藏@${mode}`);
                     showPics('我的收藏@' + mode, ['main', 'header']);
                 } else {
+                    const _name = rep.msg.rst.data.length ? rep.msg.rst.data[0].author.name : user;
+                    changeTitleName(`用户收藏@${_name}`);
                     showPics('TA 的收藏', ['main', 'header']);
                 }
             } else {
@@ -216,8 +227,10 @@ function getFollowing(user = '', mode = 'public', grpIdx = 0) {
             if (rep.code) {
                 tmpPageData = rep.msg;
                 if (user === '' || user === 'my') {
+                    changeTitleName(`我的关注@${mode}`);
                     showPics('我的关注@' + mode, ['main', 'header']);
                 } else {
+                    changeTitleName(`用户关注@${user}`);
                     showPics('TA 的关注', ['main', 'header']);
                 }
             } else {
@@ -247,6 +260,7 @@ function searchForUsers(key, grpIdx = 0) {
             rep = jQuery.parseJSON(JSON.stringify(rep));
             if (rep.code) {
                 tmpPageData = rep.msg;
+                changeTitleName(`搜索用户@${key}`);
                 showPics('用户搜索', ['main', 'header']);
             } else {
                 showPics('Error :<', ['main'], []);
@@ -273,6 +287,7 @@ function getOneWork(id) {
             rep = jQuery.parseJSON(JSON.stringify(rep));
             if (rep.code) {
                 tmpPageData = rep.msg;
+                changeTitleName(`作品@${id}`);
                 showPics('Biu~', ['main', 'header']);
             } else {
                 showPics('Error :<', ['main'], []);
@@ -288,7 +303,6 @@ function getOneWork(id) {
 
 function doBookmark(id, action = 'add') {
     let des, de, icon, tURL;
-
     if (action === 'add') {
         tURL = "api/biu/do/mark/";
         icon = '💘';
@@ -300,7 +314,6 @@ function doBookmark(id, action = 'add') {
         de = 'javascript: doBookmark(' + id + ', \'add\');';
         des = '收藏';
     }
-
     $.ajax({
         type: "GET",
         url: tURL,
@@ -324,7 +337,6 @@ function doBookmark(id, action = 'add') {
 
 function doFollow(id, action = 'add') {
     let des, de, icon, tURL;
-
     if (action === 'add') {
         tURL = "api/biu/do/follow/";
         icon = '💘';
@@ -336,7 +348,6 @@ function doFollow(id, action = 'add') {
         de = 'javascript: doFollow(' + id + ', \'add\');';
         des = '关注';
     }
-
     $.ajax({
         type: "GET",
         url: tURL,
@@ -361,13 +372,11 @@ function doFollow(id, action = 'add') {
 function doDownloadPic(kt, workID = 0, idx = -1) {
     if (downloadList.hasOwnProperty(workID))
         return;
-
     let data;
     if (idx !== -1)
         data = JSON.stringify(tmpPageData['rst']['data'][idx]['all']);
     else
         data = 0;
-
     $.ajax({
         type: "GET",
         async: true,
@@ -379,7 +388,7 @@ function doDownloadPic(kt, workID = 0, idx = -1) {
         },
         success: function (rep) {
             if (rep['msg']['rst'] === 'running') {
-                let bakJS = escape($('#dl_' + workID).attr('href').replaceAll("'", "%sq%").replaceAll("\"", "%dq%"));
+                let bakJS = maybeEncode($('#dl_' + workID).attr('href'));
                 downloadList[String(workID)] = ([bakJS, 0]);
             } else {
                 $('#art_' + workID + ' a:first').attr('class', 'image proer-error');
@@ -402,9 +411,7 @@ function doDownloadStopPic(workID) {
         data: {
             'key': workID
         },
-        success: function (rep) {
-            // console.log(rep);
-        },
+        success: function (rep) { },
         error: function (e) {
             console.log(e);
         }
@@ -413,7 +420,6 @@ function doDownloadStopPic(workID) {
 
 function grpActChon(type, grpIdx = -1, args = tmpPageData['args']) {
     const meth = args['ops']['method'];
-
     if (grpIdx <= -1) {
         if (meth === 'userMarks') {
             grpIdx = Number(args['ops']['tmp'].split('@')[0]);
@@ -422,13 +428,11 @@ function grpActChon(type, grpIdx = -1, args = tmpPageData['args']) {
             grpIdx = Number(args['ops']['groupIndex']);
         }
     }
-
     if (type === 'back' && grpIdx > 0) {
         grpIdx--;
     } else if (type === 'next') {
         grpIdx++;
     }
-
     if (meth === 'works') {
         searchForWorks(args['fun']['kt'], grpIdx);
     } else if (meth === 'searchUsers') {
