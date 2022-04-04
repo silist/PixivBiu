@@ -46,12 +46,20 @@ class DoDownload(interRoot):
             return "only support illustration, manga and ugoira"
 
         is_single = len(r["meta_pages"]) == 0
+        
+        # Check if the work is R-18 or R-18G
+        is_r18 = False
+        for tag in r["tags"]:
+            if tag["name"] in ["R-18", "R-18G", "R18", "R18G"]:
+                is_r18 = True
+                break
 
         root_uri = (
             self.CORE.biu.sets["biu"]["download"]["saveURI"]
                 .replace("{ROOTPATH}", self.getENV("rootPath"))
                 .replace("{HOMEPATH}", os.path.expanduser('~') + "/")
                 .replace("{KT}", self.pure_name(funArg["kt"]))
+                .replace("{R18}", "R-18" if is_r18 else "normal")
         )
         root_uri = self.format_name(root_uri, r)
         if root_uri[-1] != "/":
@@ -285,7 +293,7 @@ class DoDownload(interRoot):
         name = os.path.join(this._dlSaveDir, this._dlArgs["@ugoira"]["name"])
         if self.CORE.biu.sets["biu"]["download"]["whatsUgoira"] == "gif":
             self.STATIC.file.cov2gif(name + ".gif", pl, dl)
-        else:
+        elif self.CORE.biu.sets["biu"]["download"]["whatsUgoira"] == "webp":
             self.STATIC.file.cov2webp(name + ".webp", pl, dl)
         return True
 

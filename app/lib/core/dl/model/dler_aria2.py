@@ -35,25 +35,26 @@ class Aria2Dler(Dler):
         self.callback()
 
     def __monitor_schedule(self):
-        while self.status(Dler.CODE_GOOD_RUNNING) or self.status(Dler.CODE_WAIT):
-            msg = self.tell_status()
-            if not self.is_success(msg):
-                self.status(Dler.CODE_BAD_FAILED, True)
-                break
-            tmp = msg["result"]
-            if self._dlSaveUri is None and int(tmp["totalLength"]) > 0:
-                self._dlSaveUri = tmp["files"][0]["path"]
-                self._dlSaveName = tmp["files"][0]["path"].split("/")[-1]
-                self._dlFileSize = int(tmp["totalLength"])
-                self.status(Dler.CODE_GOOD_RUNNING, True)
-            self._stuIngFileSize = int(tmp["completedLength"])
-            self._stuIngSpeed = int(tmp["downloadSpeed"])
-            if self._stuIngFileSize == self._dlFileSize:
-                self.status(Dler.CODE_GOOD_SUCCESS, True)
-                break
-            else:
-                time.sleep(0.5)
-        self._stuIngSpeed = 0
+        self.status(Dler.CODE_GOOD_SUCCESS, True)
+        # while self.status(Dler.CODE_GOOD_RUNNING) or self.status(Dler.CODE_WAIT):
+        #     msg = self.tell_status()
+        #     if not self.is_success(msg):
+        #         self.status(Dler.CODE_BAD_FAILED, True)
+        #         break
+        #     tmp = msg["result"]
+        #     if self._dlSaveUri is None and int(tmp["totalLength"]) > 0:
+        #         self._dlSaveUri = tmp["files"][0]["path"]
+        #         self._dlSaveName = tmp["files"][0]["path"].split("/")[-1]
+        #         self._dlFileSize = int(tmp["totalLength"])
+        #         self.status(Dler.CODE_GOOD_RUNNING, True)
+        #     self._stuIngFileSize = int(tmp["completedLength"])
+        #     self._stuIngSpeed = int(tmp["downloadSpeed"])
+        #     if self._stuIngFileSize == self._dlFileSize:
+        #         self.status(Dler.CODE_GOOD_SUCCESS, True)
+        #         break
+        #     else:
+        #         time.sleep(3)
+        # self._stuIngSpeed = 0
 
     def tell_status(self):
         return self.call([self._a2TaskID], "aria2.tellStatus")

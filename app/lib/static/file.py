@@ -32,7 +32,7 @@ class static_file(object):
         return r
 
     @staticmethod
-    def aout(uri, data, mode="w", dRename=True, msg=False):
+    def aout(uri, data, mode="w", dRename=False, msg=False):
         if not uri:
             return False
 
