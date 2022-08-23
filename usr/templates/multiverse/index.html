@@ -109,7 +109,7 @@
                             <input id="filtersImageHeight" class="tooltip" placeholder="高度范围" autocomplete="off"
                                 title="图片的高度范围，如 500:600 或 500: 或 :600">
                             <input id="filtersImageWidthHeightRate" class="tooltip" placeholder="宽高比范围"
-                                autocomplete="off" title="图片的宽高比范围，以 / 表示比例，以 : 表示范围，如 1/1:4/3 或 1/1: 或 :4/3">
+                                autocomplete="off" title="图片的宽高比范围，以 / 表示比，以 : 表示范围，如 1/1:4/3 或 1/1: 或 :4/3">
                         </div>
                         <div>
                             <input id="filtersImageTime" class="tooltip" placeholder="时间范围" autocomplete="off"
@@ -170,6 +170,8 @@
                                 title="public: 当进行收藏、关注等操作时默认放入公开类别；private: 私人类别">
                             <input id="settingsIsR18" class="tooltip" placeholder="R18 内容" autocomplete="off"
                                 title="是否展示 R18 内容。on: 开启，off: 关闭">
+                            <input id="settingsHideMarked" class="tooltip" placeholder="隐藏已收藏" autocomplete="off"
+                                title="是否隐藏已收藏的投稿。on: 开启，off: 关闭">
                         </div>
                         <p>更多设置请于 <b>config.yml</b> 文件中修改。</p>
                     </section>
@@ -264,6 +266,7 @@
             '#settingsSearchMode': ['pixivbiu_searchMode', 'tag', '搜索模式'],
             '#settingsActionType': ['pixivbiu_actionType', 'public', '操作类型'],
             '#settingsRvrProxyUrl': ['pixivbiu_RvrProxyUrl', 'https://i.pixiv.re', '图片反代地址'],
+            '#settingsHideMarked': ['pixivbiu_hideMarked', 'on', '隐藏已收藏'],
         };
         var filtersMods = {
             '#filtersImageWidth': ['pixivbiu_fitlerImWidth', '宽度范围'],
@@ -547,6 +550,23 @@
                     var imgUrl = data[i]['image_urls']['large'].replace('https://i.pximg.net', tmpSearchSettings['pixivbiu_RvrProxyUrl']);
                     var bookedNum = data[i]['total_bookmarked'];
 
+                    // 下载medium尺寸图片
+                    
+
+                    
+                    if (tmpSearchSettings['pixivbiu_displayIsOriPic'] !== 'on')
+                    imgUrl = imgUrlCover;
+                    
+                    // 收藏按钮
+                    if (data[i]['is_bookmarked']) {
+                        // 跳过已收藏项
+                        if (tmpSearchSettings['pixivbiu_hideMarked'] == 'on')
+                        continue;
+                        extra += '<a id="marks_' + data[i]['id'] + '" href="javascript: doBookmark(' + data[i]['id'] + ', \'del\');"><b class="tooltip" title="取消收藏"><hicon>💘</hicon> ' + bookedNum + '</b></a>';
+                    } else {
+                        extra += '<a id="marks_' + data[i]['id'] + '" href="javascript: doBookmark(' + data[i]['id'] + ', \'add\');"><b class="tooltip" title="收藏"><hicon>💗</hicon> ' + bookedNum + '</b></a>';
+                    }
+                    
                     if (data[i]['all']['meta_pages'].length > 0) {
                         typeName['illustration'] = '多图';
                         typeName['manga'] = '漫画';
@@ -555,17 +575,7 @@
                         typeName['illustration'] = '图';
                         typeName['manga'] = '单漫';
                     }
-
-                    if (tmpSearchSettings['pixivbiu_displayIsOriPic'] !== 'on')
-                        imgUrl = imgUrlCover;
-
-                    // 收藏按钮
-                    if (data[i]['is_bookmarked']) {
-                        extra += '<a id="marks_' + data[i]['id'] + '" href="javascript: doBookmark(' + data[i]['id'] + ', \'del\');"><b class="tooltip" title="取消收藏"><hicon>💘</hicon> ' + bookedNum + '</b></a>';
-                    } else {
-                        extra += '<a id="marks_' + data[i]['id'] + '" href="javascript: doBookmark(' + data[i]['id'] + ', \'add\');"><b class="tooltip" title="收藏"><hicon>💗</hicon> ' + bookedNum + '</b></a>';
-                    }
-
+                    
                     // 下载归类用的文件夹名称
                     if (c['args']['fun']['kt']) {
                         kt = c['args']['fun']['kt'];
@@ -582,8 +592,12 @@
                     }
                     kt = kt.replaceAll('"', '_').replaceAll('\'', '_');
 
-                    // 下载按钮
-                    extra += '<a id="dl_' + data[i]['id'] + '" href="javascript: doDownloadPic(\'' + kt + '\', ' + data[i]['id'] + ', ' + String(i) + ');"><d class="tooltip" title="下载">' + typeName[data[i]['type']] + '</d></a>';
+                    // // 下载按钮
+                    // extra += '<a id="dl_' + data[i]['id'] + '" href="javascript: doDownloadPic(\'' + kt + '\', ' + data[i]['id'] + ', ' + String(i) + ');"><d class="tooltip" title="下载">' + typeName[data[i]['type']] + '</d></a>';
+                    
+                    // 收藏并下载
+                    extra += '<a id="mkdl_' + data[i]['id'] + '" href="javascript: doMarkAndDownload(\'' + kt + '\', ' + data[i]['id'] + ', ' + String(i) + ', \'add\');"><d class="tooltip" title="收藏并下载">' + typeName[data[i]['type']] + '</d></a>';
+                    // extra += '<a id="mkdl_' + data[i]['id'] + '" href="javascript: doMarkAndDownload(\'' + kt + '\', ' + data[i]['id'] + ', ' + String(i) + ', \'add\');"><d class="tooltip" title="收藏并下载">M&D</d></a>';
 
                     // 图片预览内容
                     var extraText = '<a target="_blank" href=".?code=%40u%3D' + data[i]['author']['id'] + '%20-i">🔍 作者插画</a> <a target="_blank" href=".?code=%40u%3D' + data[i]['author']['id'] + '%20-c">🔍 漫画</a> <a href="javascript: doDownloadPic(\'' + kt + '\', ' + data[i]['id'] + ', ' + String(i) + ');">下载</a>';
@@ -612,6 +626,7 @@
                     // R18 过滤
                     if (tmpSearchSettings['pixivbiu_displayIsR18'] !== 'on' && data[i]['all']['x_restrict'] > 0)
                         extraClass += ' mask-r18';
+
 
                     // 最终结果
                     rstHtml += '<article id="art_' + data[i]['id'] + '" class="thumb"><a href="' + imgUrl + '" class="image' + extraClass + '"><img src="' + imgUrlCover + '" alt="' + data[i]['title'] + '" /></a>' + desText + '<p>' + extraText + '</p><section class="thumbAction">' + extra + '</section></article>';

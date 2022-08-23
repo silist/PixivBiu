@@ -113,7 +113,7 @@ biu.download.whatsUgoira: "no"
   # 可选 webp, gif
   # no表示保存zip文件，不做转换
 
-biu.download.imageHost: ""
+biu.download.imageHost: "https://i.pixiv.cat"
   # 下载时使用的 Pixiv 图片服务器
   # 留空则程序自动判断
   # 可参考地址
@@ -121,6 +121,7 @@ biu.download.imageHost: ""
   # - https://i.pixiv.cat 第三方反代图片服务器（需代理）
   # - https://i.pixiv.re 第三方反代图片服务器（无需代理）
 
+biu.download.saveThumbFolder: "{ROOTPATH}/downloads/thumbs"
 
 # 私密
 secret.key.apiSauceNAO: ""

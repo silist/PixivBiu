@@ -369,16 +369,27 @@ function doFollow(id, action = 'add') {
     });
 }
 
-function doDownloadPic(kt, workID = 0, idx = -1) {
+function doDownloadPic(kt, workID = "none", idx = -1) {
     if (downloadList.hasOwnProperty(workID))
         return;
-    let data;
-    if (idx !== -1)
-        data = JSON.stringify(tmpPageData['rst']['data'][idx]['all']);
-    else
-        data = 0;
+    if (workID === "none" && idx === -1)
+        return;
+    let data = "none";
+    if (idx !== -1 && tmpPageData["rst"]["data"][idx]) {
+        const temp = tmpPageData["rst"]["data"][idx]["all"];
+        data = JSON.stringify({
+            id: temp.id,
+            type: temp.type,
+            title: temp.title,
+            create_date: temp.create_date,
+            user: temp.user,
+            meta_single_page: temp.meta_single_page,
+            meta_pages: temp.meta_pages,
+            tags: temp.tags
+        });
+    }
     $.ajax({
-        type: "GET",
+        type: "POST",
         async: true,
         url: "api/biu/do/dl/",
         data: {
@@ -414,6 +425,55 @@ function doDownloadStopPic(workID) {
         success: function (rep) { },
         error: function (e) {
             console.log(e);
+        }
+    });
+}
+
+// 收藏并下载
+function doMarkAndDownload(kt, workID, idx=-1, action="add") {
+    if (downloadList.hasOwnProperty(workID))
+        return;
+    doBookmark(workID, action);
+    if (workID === "none" && idx === -1)
+        return;
+    let data = "none";
+    if (idx !== -1 && tmpPageData["rst"]["data"][idx]) {
+        const temp = tmpPageData["rst"]["data"][idx]["all"];
+        // console.log("[doMarkAndDownload] temp: \n" + JSON.stringify(temp));
+        data = JSON.stringify({
+            id: temp.id,
+            type: temp.type,
+            title: temp.title,
+            create_date: temp.create_date,
+            user: temp.user,
+            meta_single_page: temp.meta_single_page,
+            meta_pages: temp.meta_pages,
+            tags: temp.tags
+        });
+        // console.log("[doMarkAndDownload] data: \n" + JSON.stringify(data));
+    }
+    $.ajax({
+        type: "POST",
+        async: true,
+        url: "api/biu/do/dl/",
+        data: {
+            'kt': kt,
+            'workID': workID,
+            'data': data
+        },
+        success: function (rep) {
+            if (rep['msg']['rst'] === 'running') {
+                let bakJS = maybeEncode($('#mkdl_' + workID).attr('href'));
+                downloadList[String(workID)] = ([bakJS, 0]);
+            } else {
+                $('#art_' + workID + ' a:first').attr('class', 'image proer-error');
+                $('#mkdl_' + workID + ' d').html('错误 重试');
+            }
+        },
+        error: function (e) {
+            console.log(e);
+            $('#art_' + workID + ' a:first').attr('class', 'image proer-error');
+            $('#mkdl_' + workID + ' d').html('错误 重试');
         }
     });
 }
@@ -457,3 +517,28 @@ function grpActChon(type, grpIdx = -1, args = tmpPageData['args']) {
         getOneWork(args['fun']['workID']);
     }
 }
+
+// POST url给aria2下载
+function downloadWithAria2(url) {
+    $.ajax({
+        type: "POST",
+        async: true,
+        url: "",
+        data: {
+            'url': url
+        },
+        success: function (rep) {
+            if (rep['msg']['rst'] === 'running') {
+                $('#btnHeaderNext i').tooltipster('content', '正在下载...');
+            } else {
+                $('#btnHeaderNext i').tooltipster('content', '下载失败, 点击重试');
+            }
+        },
+        error: function (e) {
+            console.log(e);
+            $('#btnHeaderNext i').tooltipster('content', '下载失败, 点击重试');
+        }
+    });
+}
+
+// 
