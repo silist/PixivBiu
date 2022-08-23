@@ -32,8 +32,7 @@ class DoDownload(interRoot):
         }
 
     def dl(self, opsArg, funArg):
-        # print("funArg:\n", funArg)
-        if funArg["data"] == "none":
+        if funArg["data"] == 0:
             r = self.CORE.biu.api.illust_detail(funArg["workID"])
             if "illust" not in r:
                 self.code = 0
@@ -81,7 +80,7 @@ class DoDownload(interRoot):
             file_type = "file"
             url_hash = None
             cache_name = None
-            urls = sorted([x["image_urls"]["original"] for x in r["meta_pages"]])
+            urls = [x["image_urls"]["original"] for x in r["meta_pages"]]
             if self.CORE.biu.sets["biu"]["download"]["autoArchive"]:
                 extra = image_save_name + "/"
                 file_type = "folder"

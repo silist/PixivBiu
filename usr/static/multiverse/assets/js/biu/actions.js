@@ -372,22 +372,11 @@ function doFollow(id, action = 'add') {
 function doDownloadPic(kt, workID = "none", idx = -1) {
     if (downloadList.hasOwnProperty(workID))
         return;
-    if (workID === "none" && idx === -1)
-        return;
-    let data = "none";
-    if (idx !== -1 && tmpPageData["rst"]["data"][idx]) {
-        const temp = tmpPageData["rst"]["data"][idx]["all"];
-        data = JSON.stringify({
-            id: temp.id,
-            type: temp.type,
-            title: temp.title,
-            create_date: temp.create_date,
-            user: temp.user,
-            meta_single_page: temp.meta_single_page,
-            meta_pages: temp.meta_pages,
-            tags: temp.tags
-        });
-    }
+    let data;
+    if (idx !== -1)
+        data = JSON.stringify(tmpPageData['rst']['data'][idx]['all']);
+    else
+        data = 0;
     $.ajax({
         type: "POST",
         async: true,
